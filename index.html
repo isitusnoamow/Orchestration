@@ -15,13 +15,13 @@
             <h1>Orchestration</h1>
             <h6>Transform your music to any style</h6>
             <h6>Drag and Drop any .midi file to load</h6>
-            <h6 id="loaded">Loaded: ❌</h6>
+            <h6 id="loaded">Loaded: ❌ Will Play Demo</h6>
             <h5>Style:</h5>
             <select name="style" id="musicstyle">
-                <option value="strings">Strings</option>
                 <option value="synth">Synth</option>
                 <option value="piano">Piano</option>
-                <option value="brass">Jazz</option>
+                <option value="strings">Strings</option>
+                <option value="jazz">Jazz</option>
                 <option value="orchestra">Orchestral</option>
             </select>
             <button id="start" onclick="start()">Start</button>
@@ -29,7 +29,7 @@
         </div>
     </div>
     <script>
-        let stream;
+        let stream = new URL("https://raw.githubusercontent.com/isitusnoamow/Orchestration/main/WiiShop.mid");
         let loaded = document.getElementById("loaded");
         let choice = document.getElementById("musicstyle")
         const synths = []
@@ -204,6 +204,84 @@
             baseUrl: "https://nbrosowsky.github.io/tonejs-instruments/samples/piano/"
         })
 
+        const saxophone = new Tone.Sampler({
+            urls: {
+                'D#5': 'Ds5.mp3',
+                'E3': 'E3.mp3',
+                'E4': 'E4.mp3',
+                'E5': 'E5.mp3',
+                'F3': 'F3.mp3',
+                'F4': 'F4.mp3',
+                'F5': 'F5.mp3',
+                'F#3': 'Fs3.mp3',
+                'F#4': 'Fs4.mp3',
+                'F#5': 'Fs5.mp3',
+                'G3': 'G3.mp3',
+                'G4': 'G4.mp3',
+                'G5': 'G5.mp3',
+                'G#3': 'Gs3.mp3',
+                'G#4': 'Gs4.mp3',
+                'G#5': 'Gs5.mp3',
+                'A4': 'A4.mp3',
+                'A5': 'A5.mp3',
+                'A#3': 'As3.mp3',
+                'A#4': 'As4.mp3',
+                'B3': 'B3.mp3',
+                'B4': 'B4.mp3',
+                'C4': 'C4.mp3',
+                'C5': 'C5.mp3',
+                'C#3': 'Cs3.mp3',
+                'C#4': 'Cs4.mp3',
+                'C#5': 'Cs5.mp3',
+                'D3': 'D3.mp3',
+                'D4': 'D4.mp3',
+                'D5': 'D5.mp3',
+                'D#3': 'Ds3.mp3',
+                'D#4': 'Ds4.mp3'
+            },
+            baseUrl: "https://nbrosowsky.github.io/tonejs-instruments/samples/saxophone/"
+        })
+
+        const trumpet = new Tone.Sampler({
+            urls: {
+                'C6': 'C6.[mp3|ogg]',
+                'D5': 'D5.[mp3|ogg]',
+                'D#4': 'Ds4.[mp3|ogg]',
+                'F3': 'F3.[mp3|ogg]',
+                'F4': 'F4.[mp3|ogg]',
+                'F5': 'F5.[mp3|ogg]',
+                'G4': 'G4.[mp3|ogg]',
+                'A3': 'A3.[mp3|ogg]',
+                'A5': 'A5.[mp3|ogg]',
+                'A#4': 'As4.[mp3|ogg]',
+                'C4': 'C4.[mp3|ogg]'
+            },
+            baseUrl:  "https://nbrosowsky.github.io/tonejs-instruments/samples/trumpet/"
+        })
+
+        const trombone = new Tone.Sampler({
+            urls: {
+                'A#3': 'As3.[mp3|ogg]',
+                'C3': 'C3.[mp3|ogg]',
+                'C4': 'C4.[mp3|ogg]',
+                'C#2': 'Cs2.[mp3|ogg]',
+                'C#4': 'Cs4.[mp3|ogg]',
+                'D3': 'D3.[mp3|ogg]',
+                'D4': 'D4.[mp3|ogg]',
+                'D#2': 'Ds2.[mp3|ogg]',
+                'D#3': 'Ds3.[mp3|ogg]',
+                'D#4': 'Ds4.[mp3|ogg]',
+                'F2': 'F2.[mp3|ogg]',
+                'F3': 'F3.[mp3|ogg]',
+                'F4': 'F4.[mp3|ogg]',
+                'G#2': 'Gs2.[mp3|ogg]',
+                'G#3': 'Gs3.[mp3|ogg]',
+                'A#1': 'As1.[mp3|ogg]',
+                'A#2': 'As2.[mp3|ogg]'
+            },
+            baseUrl: "https://nbrosowsky.github.io/tonejs-instruments/samples/trombone/"
+        })
+
         window.addEventListener('dragover', function(e) {
             e.stopPropagation();
             e.preventDefault();
@@ -273,6 +351,116 @@
             })
         }
 
+        function loadJazz() {
+            Midi.fromUrl(stream).then(midi => {
+                const now = Tone.now() + 0.5
+                
+                midi.tracks.forEach(track => {
+                    const trumpetsynth = trumpet.toDestination()
+                    const trombonesynth = trombone.toDestination()
+                    const contrabasssynth = contrabass.toDestination()
+                    const saxophonesynth = saxophone.toDestination()
+
+                    synths.push(trumpetsynth);
+                    synths.push(trombonesynth);
+                    synths.push(contrabasssynth);
+                    synths.push(saxophonesynth);
+                    track.notes.forEach((note) => {
+                        switch(Number(note.name.slice(-1))){
+                            case 1:
+                            case 2:
+                                contrabasssynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                );    
+                                break;
+                            case 3:
+                                trumpetsynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                break;
+                            case 4:
+                                trumpetsynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                saxophonesynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                trombonesynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                break;
+                            case 5:
+                                trumpetsynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                saxophonesynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                trombonesynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                break;
+                            case 6:
+                                saxophonesynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                trombonesynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                break;
+                            case 7:
+                            case 8:
+                                saxophonesynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                trombonesynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                break;
+
+                            
+                        }
+                    });
+                })
+            })
+        }
+
         function loadSynth() {
             Midi.fromUrl(stream).then(midi => {
                 const now = Tone.now() + 0.5
@@ -327,14 +515,17 @@
             }
             Tone.start()
             const choose = choice.options[choice.selectedIndex].value
-            if(choose == "strings"){
-                loadStrings();
-            }
             if(choose == "synth"){
                 loadSynth();
             }
             if(choose == "piano"){
                 loadPiano();
+            }
+            if(choose == "strings"){
+                loadStrings();
+            }
+            if(choose == "jazz"){
+                loadJazz();
             }
         }
 
