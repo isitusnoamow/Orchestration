@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orchestration</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@tonejs/midi@2.0.28/build/Midi.js"></script>
+</head>
+<body>
+    <div id="dropdiv">
+        <div id="sect">
+            <h1>Orchestration</h1>
+            <h6>Transform your music to any style</h6>
+            <h6>Drag and Drop any .midi file to load</h6>
+            <h6 id="loaded">Loaded: ❌</h6>
+            <h5>Style:</h5>
+            <select name="style" id="musicstyle">
+                <option value="strings">Strings</option>
+                <option value="synth">Synth</option>
+                <option value="brass">Jazz</option>
+                <option value="orchestra">Orchestral</option>
+            </select>
+            <button id="start" onclick="start()">Start</button>
+            <button id="stop" onclick="stop()">Stop</button>
+        </div>
+    </div>
+    <script>
+        let stream;
+        let loaded = document.getElementById("loaded");
+        let choice = document.getElementById("musicstyle")
+        const synths = []
+
+        const cello = new Tone.Sampler({
+            urls: {
+                'E3': 'E3.mp3',
+                'E4': 'E4.mp3',
+                'F2': 'F2.mp3',
+                'F3': 'F3.mp3',
+                'F4': 'F4.mp3',
+                'F#3': 'Fs3.mp3',
+                'F#4': 'Fs4.mp3',
+                'G2': 'G2.mp3',
+                'G3': 'G3.mp3',
+                'G4': 'G4.mp3',
+                'G#2': 'Gs2.mp3',
+                'G#3': 'Gs3.mp3',
+                'G#4': 'Gs4.mp3',
+                'A2': 'A2.mp3',
+                'A3': 'A3.mp3',
+                'A4': 'A4.mp3',
+                'A#2': 'As2.mp3',
+                'A#3': 'As3.mp3',
+                'B2': 'B2.mp3',
+                'B3': 'B3.mp3',
+                'B4': 'B4.mp3',
+                'C2': 'C2.mp3',
+                'C3': 'C3.mp3',
+                'C4': 'C4.mp3',
+                'C5': 'C5.mp3',
+                'C#3': 'Cs3.mp3',
+                'C#4': 'Cs4.mp3',
+                'D2': 'D2.mp3',
+                'D3': 'D3.mp3',
+                'D4': 'D4.mp3',
+                'D#2': 'Ds2.mp3',
+                'D#3': 'Ds3.mp3',
+                'D#4': 'Ds4.mp3',
+                'E2': 'E2.mp3'
+            },
+            baseUrl: "https://nbrosowsky.github.io/tonejs-instruments/samples/cello/"
+        })
+
+        const contrabass = new Tone.Sampler({
+            urls: {
+                'C2': 'C2.mp3',
+                'D2': 'D2.mp3',
+                'E2': 'E2.mp3',
+                'E3': 'E3.mp3',
+                'G1': 'G1.mp3',
+                'A2': 'A2.mp3',
+                'B3': 'B3.mp3',
+                'C#3': 'Cs3.mp3',
+                'F#1': 'Fs1.mp3',
+                'F#2': 'Fs2.mp3',
+                'G#2': 'Gs2.mp3',
+                'G#3': 'Gs3.mp3',
+                'A#1': 'As1.mp3',
+            },
+            baseUrl: "https://nbrosowsky.github.io/tonejs-instruments/samples/contrabass/"
+        })
+
+        const violin = new Tone.Sampler({
+            urls:{
+                'A3': 'A3.mp3',
+                'A4': 'A4.mp3',
+                'A5': 'A5.mp3',
+                'A6': 'A6.mp3',
+                'C4': 'C4.mp3',
+                'C5': 'C5.mp3',
+                'C6': 'C6.mp3',
+                'C7': 'C7.mp3',
+                'E4': 'E4.mp3',
+                'E5': 'E5.mp3',
+                'E6': 'E6.mp3',
+                'G4': 'G4.mp3',
+                'G5': 'G5.mp3',
+                'G6': 'G6.mp3'
+            },
+            baseUrl: "https://nbrosowsky.github.io/tonejs-instruments/samples/violin/"
+        })
+
+        window.addEventListener('dragover', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        })
+
+        window.addEventListener('drop', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            stream = URL.createObjectURL(event.dataTransfer.files[0])
+            loaded.innerHTML = "Loaded: ✅"
+        })
+
+        function loadStrings() {
+            Midi.fromUrl(stream).then(midi => {
+                console.log("work")
+                const now = Tone.now() + 0.5
+                
+                midi.tracks.forEach(track => {
+                    const cellosynth = cello.toDestination()
+                    const contrabasssynth = contrabass.toDestination()
+                    const violinsynth = violin.toDestination()
+
+                    synths.push(cellosynth);
+                    synths.push(contrabasssynth);
+                    synths.push(violinsynth);
+                    track.notes.forEach((note) => {
+                        switch(Number(note.name.slice(-1))){
+                            case 1:
+                            case 2:
+                                cellosynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                contrabasssynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                );    
+                                break;
+                            case 3:
+                                cellosynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                ); 
+                                break;
+                            case 4:
+                            case 5:
+                            case 6:
+                                violinsynth.triggerAttackRelease(
+                                    note.name,
+                                    note.duration,
+                                    note.time + now,
+                                    note.velocity
+                                )
+                                break;
+
+                            
+                        }
+                    });
+                })
+            })
+        }
+
+        function loadSynth() {
+            Midi.fromUrl(stream).then(midi => {
+                console.log("work")
+                const now = Tone.now() + 0.5
+                
+                midi.tracks.forEach(track => {
+                    const synth = new Tone.PolySynth(Tone.Synth, {
+                        envelope: {
+                            attack: 0.02,
+                            decay: 0.1,
+                            sustain: 0.3,
+                            release: 1,
+                        },
+                    }).toDestination();
+
+                    synths.push(synth);
+                    track.notes.forEach((note) => {
+                        synth.triggerAttackRelease(
+                            note.name,
+                            note.duration,
+                            note.time + now,
+                            note.velocity
+                        )
+                    });
+                })
+            })
+        }
+
+        function start(){
+            while (synths.length) {
+                const synth = synths.shift();
+                synth.disconnect();
+            }
+            Tone.start()
+            const choose = choice.options[choice.selectedIndex].value
+            if(choose == "strings"){
+                loadStrings();
+            }
+            if(choose == "synth"){
+                loadSynth();
+            }
+        }
+
+        function stop(){
+            while (synths.length) {
+                const synth = synths.shift();
+                synth.disconnect();
+            }
+        }
+
+    </script>
+</body>
+</html>
